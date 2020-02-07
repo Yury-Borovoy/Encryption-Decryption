@@ -1,0 +1,183 @@
+type: edu
+custom_name: stage5
+files:
+- name: test/EncryptDecryptTest.java
+  visible: false
+  text: |
+    import encryptdecrypt.Main;
+    import org.hyperskill.hstest.v6.common.FileUtils;
+    import org.hyperskill.hstest.v6.stage.BaseStageTest;
+    import org.hyperskill.hstest.v6.testcase.CheckResult;
+    import org.hyperskill.hstest.v6.testcase.TestCase;
+
+    import java.util.List;
+
+    public class EncryptDecryptTest extends BaseStageTest<String> {
+        public EncryptDecryptTest() {
+            super(Main.class);
+        }
+
+        @Override
+        public List<TestCase<String>> generate() {
+            return List.of(
+                new TestCase<String>()
+                    .addArguments(
+                        "-mode", "enc",
+                        "-key", "5",
+                        "-in", "in.txt",
+                        "-out", "output.txt"
+                    )
+                    .setAttach("\\jqhtrj%yt%m~ujwxpnqq&")
+                    .addFile("in.txt", "Welcome to hyperskill!"),
+
+                new TestCase<String>()
+                    .addArguments(
+                        "-key", "0",
+                        "-mode", "enc",
+                        "-in", "input.txt",
+                        "-out", "output.txt"
+                    )
+                    .setAttach("Hello")
+                    .addFile("input.txt", "Hello"),
+
+                new TestCase<String>()
+                    .addArguments(
+                        "-key", "1",
+                        "-in", "i.txt",
+                        "-out", "output.txt",
+                        "-mode", "enc"
+                    )
+                    .setAttach("123456789")
+                    .addFile("i.txt", "012345678"),
+
+                new TestCase<String>()
+                    .addArguments(
+                        "-mode", "dec",
+                        "-in", "input.txt",
+                        "-out", "output.txt",
+                        "-key", "5"
+                    )
+                    .setAttach("Welcome to hyperskill!")
+                    .addFile("input.txt", "\\jqhtrj%yt%m~ujwxpnqq&"),
+
+                new TestCase<String>()
+                    .addArguments(
+                        "-mode", "dec",
+                        "-key", "0",
+                        "-in", "input.txt",
+                        "-out", "output.txt"
+                    )
+                    .setAttach("Hi")
+                    .addFile("input.txt", "Hi"),
+
+                new TestCase<String>()
+                    .addArguments(
+                        "-mode", "dec",
+                        "-key", "1",
+                        "-in", "input.txt",
+                        "-out", "output.txt"
+                    )
+                    .setAttach("111122223333")
+                    .addFile("input.txt", "222233334444")
+            );
+        }
+
+        @Override
+        public CheckResult check(String reply, String clue) {
+            String output = FileUtils.readFile("output.txt");
+            return new CheckResult(output.trim().equals(clue.trim()));
+        }
+    }
+  learner_created: false
+- name: src/encryptdecrypt/Main.java
+  visible: true
+  text: |-
+    package encryptdecrypt;
+    import java.util.*;
+    import java.util.regex.Matcher;
+    import java.util.regex.Pattern;
+
+    public class Main {
+        private int key;
+        private char[] data;
+        private String mode;
+        public String getMode() {
+            return mode;
+        }
+        public void setMode(String mode) {
+            this.mode = mode;
+        }
+        public int getKey() {
+            return key;
+        }
+        public void setKey(int key) {
+            this.key = key;
+        }
+        public char[] getData() {
+            return data;
+        }
+        public void setData(char[] data) {
+            this.data = data;
+
+        }
+        public void encryption() {
+            int size = 94;
+            for (char item : getData()) {
+                if (item >= 32 && item <= 126) {
+                    char keyItem = (char) (((item - 33 + getKey()) % size) + 33);
+                    System.out.print(keyItem);
+                } else {
+                    System.out.print(item);
+                }
+            }
+        }
+        public void decryption() {
+            int size = 94;
+            for (char item : getData()) {
+                if (item >= 32 && item <= 126) {
+                    char keyItem = (char) (((item - 33 - getKey()) % size) + 33);
+                    System.out.print(keyItem);
+                } else {
+                    System.out.print(item);
+                }
+            }
+        }
+        public static void sortArgs(Main main, String[] args) {
+            main.setData("".toCharArray());
+            main.setKey(0);
+            main.setMode("enc");
+            Pattern patMode = Pattern.compile("-mode");
+            Pattern patKey = Pattern.compile("-key");
+            Pattern patData = Pattern.compile("-data");
+            for(int i = 0; i < args.length; i++){
+                Matcher matMode = patMode.matcher(args[i]);
+                Matcher matKey = patKey.matcher(args[i]);
+                Matcher matData = patData.matcher(args[i]);
+                if(matMode.find()){
+                   main.setMode(args[i + 1]);
+                }if(matKey.find()){
+                    main.setKey(Integer.parseInt(args[i + 1]));
+                }
+                if(matData.find()){
+                    main.setData(args[i + 1].toCharArray());
+                }
+            }
+        }
+        public static void main(String[] args) {
+            Main main = new Main();
+            sortArgs(main, args);
+            if(main.getMode().equals("enc")){
+                main.encryption();
+            } else{
+                main.decryption();
+            }
+        }
+    }
+  learner_created: false
+- name: output.txt
+  visible: true
+  text: 111122223333
+  learner_created: false
+feedback_link: https://hyperskill.org/projects/46/stages/249/implement
+status: Solved
+record: 2

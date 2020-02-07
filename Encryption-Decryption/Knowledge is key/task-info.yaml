@@ -1,0 +1,245 @@
+type: edu
+custom_name: stage2
+files:
+- name: test/EncryptDecryptTest.java
+  visible: false
+  text: |
+    import encryptdecrypt.Main;
+    import org.hyperskill.hstest.v6.stage.BaseStageTest;
+    import org.hyperskill.hstest.v6.testcase.CheckResult;
+    import org.hyperskill.hstest.v6.testcase.TestCase;
+
+    import java.util.List;
+
+
+    class Attach {
+        String original;
+        int shift;
+        String output;
+
+        public Attach(String original, int shift, String output) {
+            this.original = original;
+            this.shift = shift;
+            this.output = output;
+        }
+    }
+
+    public class EncryptDecryptTest extends BaseStageTest<Attach> {
+        public EncryptDecryptTest() {
+            super(Main.class);
+        }
+
+        @Override
+        public List<TestCase<Attach>> generate() {
+            return List.of(
+                new TestCase<Attach>()
+                    .setInput("welcome to hyperskill\n5")
+                    .setAttach(new Attach(
+                        "welcome to hyperskill",
+                        5,
+                        "bjqhtrj yt mdujwxpnqq")),
+
+                new TestCase<Attach>()
+                    .setInput("treasure\n10")
+                    .setAttach(new Attach(
+                        "treasure",
+                        10,
+                        "dbokcebo"
+                    )),
+
+                new TestCase<Attach>()
+                    .setInput("qdvdqvrxqwxrxwpvrxspvxiqgdiqarairpbiqqid\n12")
+                    .setAttach(new Attach(
+                        "qdvdqvrxqwxrxwpvrxspvxiqgdiqarairpbiqqid",
+                        12,
+                        "cphpchdjcijdjibhdjebhjucspucmdmudbnuccup"
+                    )),
+
+                new TestCase<Attach>()
+                    .setInput("y\n10")
+                    .setAttach(new Attach(
+                        "y",
+                        10,
+                        "i"
+                    ))
+            );
+        }
+
+        @Override
+        public CheckResult check(String reply, Attach attach) {
+            String clue = attach.output;
+            reply = reply.trim();
+            clue = clue.trim();
+            boolean isCorrect = reply.equals(clue);
+            if (isCorrect) {
+                return CheckResult.TRUE;
+            }
+            if (reply.length() != clue.length()) {
+                return CheckResult.FALSE(
+                    "You should output a line with length " +
+                        clue.length() + ". " + "You output a " +
+                        "line with length " + reply.length()
+                );
+            }
+            for (int i = 0; i < clue.length(); i++) {
+                if (reply.charAt(i) != clue.charAt(i)) {
+                    return CheckResult.FALSE(
+                        "Your " + (i+1) + "-th character '" + reply.charAt(i) + "'" +
+                            " is incorrect. \n" +
+                        "The right one is '" + clue.charAt(i) + "'. \n" +
+                            "Key is " + attach.shift
+                    );
+                }
+            }
+            return CheckResult.TRUE;
+        }
+    }
+  learner_created: false
+- name: src/encryptdecrypt/Main.java
+  visible: true
+  text: |
+    package encryptdecrypt;
+
+            import org.jetbrains.annotations.NotNull;
+
+            import java.io.File;
+            import java.io.FileWriter;
+            import java.io.IOException;
+            import java.util.Scanner;
+
+
+    public class Main {
+        private int key;
+        private String phrase;
+        private String mode = "enc";
+        private String in;
+        private String out;
+
+        //GETTERS and SETTERS
+        public int getKey(){
+            return key;
+        }
+        public void setKey(int key){
+            this.key = key;
+        }
+        public String getPhrase(){
+            return phrase;
+        }
+        public void setPhrase(String phrase){
+            this.phrase = phrase;
+        }
+        public String getMode(){
+            return mode;
+        }
+        public void setMode(String mode) {
+            this.mode = mode;
+        }
+        public String getIn() {
+            return in;
+        }
+        public void setIn(String in) {
+            this.in = in;
+        }
+        public String getOut(){
+            return out;
+        }
+        public void setOut(String out) {
+            this.out = out;
+        }
+
+        //encrypt the phrase
+        public static void encryption(@NotNull String phrase, int key, StringBuilder build){
+            for(char symbol: phrase.toCharArray()){
+                char output = (char) (symbol + key);
+                build.append(output);
+            }
+        }
+        //decrypt the phrase
+        public static void decryption(@NotNull String phrase, int key, StringBuilder build){
+            for(char symbol: phrase.toCharArray()){
+                char output = (char) (symbol - key);
+                build.append(output);
+            }
+        }
+
+        //install values
+        public void installVal(@NotNull Main main, @NotNull String[] args){
+            main.setKey(0);
+            main.setMode("enc");
+            main.setPhrase("");
+            main.setIn("");
+            main.setOut("");
+            for (int i = 0; i < args.length; i += 2) {
+                switch (args[i]) {
+                    case "-mode":
+                        main.setMode(args[i + 1]);
+                        break;
+                    case "-key":
+                        main.setKey(Integer.parseInt(args[i + 1]));
+                        break;
+                    case "-data":
+                        main.setPhrase(args[i + 1]);
+                        break;
+                    case "-in":
+                        main.setIn(args[i + 1]);
+                        break;
+                    case "-out":
+                        main.setOut(args[i + 1]);
+                        break;
+                }
+            }
+        }
+
+        //encryption-decryption of a phrase
+        public void encDec(@NotNull Main main, StringBuilder build){
+            if(!main.getIn().matches("")){
+                try {
+                    File file = new File(main.getIn());
+                    Scanner scan = new Scanner(file);
+                    main.setPhrase(scan.nextLine());
+                    scan.close();
+                    if (main.getMode().matches("dec")) {
+                        decryption(main.getPhrase(), main.getKey(), build);
+                    } else {
+                        encryption(main.getPhrase(), main.getKey(), build);
+                    }
+                    if (!main.getOut().matches("")) {
+                        FileWriter writer = new FileWriter(main.getOut());
+                        writer.write(String.valueOf(build));
+                        writer.close();
+                    } else {
+                        System.out.println(build);
+                    }
+                } catch(IOException e){
+                    System.out.println("Error");
+                }
+            }else{
+                if(main.getPhrase().matches("")){
+                    System.out.println();
+                }else{
+                    if(main.getMode().matches("dec")){
+                        decryption(main.getPhrase(), main.getKey(), build);
+                    }else{
+                        encryption(main.getPhrase(), main.getKey(), build);
+                    }
+                }
+                System.out.println(build);
+            }
+        }
+
+        public static void main(String[] args) {
+            Main main = new Main();
+            StringBuilder build = new StringBuilder();
+            main.installVal(main, args);
+            main.encDec(main, build);
+
+        }
+    }
+  learner_created: false
+- name: output.txt
+  visible: true
+  text: 111122223333
+  learner_created: false
+feedback_link: https://hyperskill.org/projects/46/stages/246/implement
+status: Solved
+record: 4
