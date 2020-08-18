@@ -15,6 +15,7 @@ The program can accept the arguments both from command line and standart input. 
 The program gets a message and a key from the standart input or the command line and shifts each letter by specified number according to its order in the alphabet. If it reaches the end of the alphabet, starts back at the beginning (a follows z). The program doesn't modify non-letter characters.
 
 ![code](https://github.com/Yury-Borovoy/Encryption-Decryption/blob/master/Screenshot_1.jpg)
+
  For example:
  
  ***welcome to hyperskill***
